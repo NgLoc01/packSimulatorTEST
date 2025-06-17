@@ -1,42 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Magic Chat Room</title>
+    <title>Chat Room</title>
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
 </head>
 <body>
-    <h2>Magic Chat</h2>
-    <div id="chat"></div>
-    <input type="text" id="from" placeholder="Name" />
-    <input type="text" id="content" placeholder="Message" />
-    <button onclick="sendMessage()">Send</button>
+<h2>TEST Room</h2>
+<div id="chat"></div>
+<input type="text" id="from" placeholder="Name" />
+<input type="text" id="content" placeholder="Message" />
+<button onclick="sendMessage()">Send</button>
 
-    <script>
-        const socket = new SockJS('/chat-websocket');
-        const stompClient = Stomp.over(socket);
+<script type="text/javascript">
+    const socket = new SockJS('/chat-websocket');
+    const stompClient = Stomp.over(socket);
 
-        stompClient.connect({}, function () {
-            stompClient.subscribe('/topic/messages', function (messageOutput) {
-                const msg = JSON.parse(messageOutput.body);
-                const chat = document.getElementById('chat');
-                chat.innerHTML += `
-                    <div>
-                        <strong>${msg.from}</strong> [${msg.time}]: ${msg.content}<br/>
-                        <em>${msg.cardName}</em><br/>
-                        <img src="${msg.cardImage}" width="200"/><br/><br/>
-                    </div>
-                `;
-            });
+    stompClient.connect({}, function (frame) {
+        console.log('Connected: ' + frame);
+        stompClient.subscribe('/topic/messages', function (messageOutput) {
+            const msg = JSON.parse(messageOutput.body);
+            const chat = document.getElementById('chat');
+            const line = `<div><strong>${msg.from}</strong> [${msg.time}]: ${msg.content}</div>`;
+            chat.innerHTML += line;
         });
+    });
 
-        function sendMessage() {
-            const from = document.getElementById('from').value;
-            const content = document.getElementById('content').value;
-            stompClient.send("/app/chat", {}, JSON.stringify({ from, content }));
-            document.getElementById('content').value = '';
-        }
-    </script>
+    function sendMessage() {
+        const from = document.getElementById('from').value;
+        const content = document.getElementById('content').value;
+        stompClient.send("/app/chat", {}, JSON.stringify({ from, content }));
+        document.getElementById('content').value = '';
+    }
+</script>
 </body>
 </html>
